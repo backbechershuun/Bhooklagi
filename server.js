@@ -13,11 +13,6 @@ import menuRoutes from "./routes/menuRoutes.js";
 
 dotenv.config();
 
-// TEMPORARY DEBUG — remove after confirming env vars are loading correctly
-console.log("DEBUG MONGO_URI present:", !!process.env.MONGO_URI);
-console.log("DEBUG MONGO_URI length:", process.env.MONGO_URI?.length || 0);
-console.log("DEBUG NODE_ENV:", process.env.NODE_ENV);
-
 connectDB();
 
 const app = express();
