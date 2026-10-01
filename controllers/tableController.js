@@ -39,11 +39,15 @@ export const getTablesByRestaurant = async (req, res) => {
 
 // GET /api/tables/:restaurantId/availability?date=2026-09-12&timeSlot=19:00&partySize=4
 //
-// A table is unavailable if any ACTIVE booking (pending, pending_payment, or
+// Returns EVERY active table that fits the party, each with an `isBooked`
+// flag. A table is booked if any ACTIVE booking (pending, pending_payment, or
 // confirmed) on it has a 3-hour hold window overlapping the requested slot.
 // "completed" and "cancelled" bookings never block — so once an owner marks
 // a booking completed, the table frees up immediately even if the 3-hour
 // window hasn't elapsed yet.
+//
+// The frontend shows a red "B" on tables where isBooked is true and lets
+// guests select only the others.
 export const getAvailableTables = async (req, res) => {
   try {
     const { restaurantId } = req.params;
@@ -67,9 +71,13 @@ export const getAvailableTables = async (req, res) => {
     }).distinct("table");
 
     const bookedSet = new Set(bookedTableIds.map((id) => id.toString()));
-    const availableTables = allTables.filter((t) => !bookedSet.has(t._id.toString()));
 
-    res.json(availableTables);
+    res.json(
+      allTables.map((t) => ({
+        ...t.toObject(),
+        isBooked: bookedSet.has(t._id.toString()),
+      }))
+    );
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
